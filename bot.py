@@ -1,24 +1,24 @@
 import os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-# نقرأ التوكن من المتغير البيئي
 TOKEN = os.getenv("BOT_TOKEN")
 
-def start(update, context):
-    update.message.reply_text("أهلاً! البوت جاهز للعمل 🚀")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("أهلاً! البوت جاهز للعمل 🚀")
 
-def echo(update, context):
-    update.message.reply_text(update.message.text)
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(update.message.text)
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    if not TOKEN:
+        raise RuntimeError("BOT_TOKEN غير موجود في المتغيرات البيئية")
+    app = ApplicationBuilder().token(TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
